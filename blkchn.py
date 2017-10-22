@@ -1,6 +1,8 @@
 import hashlib
 import json
 from time import time
+from uuid import uuid4
+
 
 class blockchain(object):
 
@@ -44,7 +46,19 @@ class blockchain(object):
         })
 
         return self.last_block['Index']  + 1
-    
+        
+    def proof_of_work(self, last_proof):
+        # A simple Proof of work algorithm
+        # Find a number p' such that hash(pp') contains leading 4 zeroes, where p is the previous p'
+        # p is the previous proof, and p' is the new proof
+
+        proof = 0
+
+        while self.valid_proof(last_proof, proof) is False
+            proof += 1
+
+        return proof
+
     @staticmethod
 
     def hash(block):
@@ -54,6 +68,13 @@ class blockchain(object):
         block_string = json.dump(block, sort_keys=True).encode()
         return hashlib.sha256(block_string).hexdigest()
         
+    def valid_proof(last_proof, proof)
+        # An algorithm that helps to validate the proof
+        # The guess var is typical hash function with 2 inputs of 'last proof' and 'proof'
+
+        guess = 'f{last_proof}{proof}'.encode()
+        guess_hash = hashlib.sha3_256(guess).hexdigest()
+        return guess_hash[:4] == "0000"
 
     @property
 
