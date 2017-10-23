@@ -5,25 +5,25 @@ from uuid import uuid4
 from textwrap import dedent
 from flask import Flask, jsonify, request
 
-class blockchain(object):
+class Blockchain():
 
 
     def __init__(self):
         self.chain = []
         self.current_transaction = []
-
+        self.nodes = set()
         # Creating the Root Block(Genesis)
         self.new_block(proof = 100, previous_hash = 1)
 
 
-    def new_block(self, proof, previous_hash=None;):
+    def new_block(self, proof, previous_hash=None):
         # Will Create a new Block and adds it to the chain
         
         # This is the structure of the Blocks in the blockchain
         block = {
             'index': len(self.chain) + 1,
             'timestamp': time(),
-            'transactions': self.current_transactions,
+            'transactions': self.current_transaction,
             'proof': proof,
             'previous_hash': previous_hash or self.hash(self.chain[-1]),
         }
@@ -55,19 +55,10 @@ class blockchain(object):
 
         proof = 0
 
-        while self.valid_proof(last_proof, proof) is False
+        while self.valid_proof(last_proof, proof) is False:
             proof += 1
 
         return proof
-
-    # Instantiate our Node
-    app = Flask(__name__)
-
-    # Generate a globally unique address for this node
-    node_identifier = str(uuid4()).replace('-', '')
-
-    # Instantiate the Blockchain
-    blockchain = Blockchain()
 
     @staticmethod
 
@@ -78,7 +69,7 @@ class blockchain(object):
         block_string = json.dump(block, sort_keys=True).encode()
         return hashlib.sha256(block_string).hexdigest()
         
-    def valid_proof(last_proof, proof)
+    def valid_proof(last_proof, proof):
         # An algorithm that helps to validate the proof
         # The guess var is typical hash function with 2 inputs of 'last proof' and 'proof'
 
@@ -93,14 +84,21 @@ class blockchain(object):
 
         return self.chain[-1]
 
+# Instantiate our Node
+app = Flask(__name__)
+
+# Generate a globally unique address for this node
+node_identifier = str(uuid4()).replace('-', '')
+
+# Instantiate the Blockchain
+blockchain = Blockchain()
+
+@app.route('/mine', methods=['GET'])
 
 
-    @app.route('/mine', methods=['GET'])
-    
-
-    def mine():
+def mine():
     # We run the proof of work algorithm to get the next proof...
-    last_block = blockchain.last_block
+    last_block = blockchain.last_block()
     last_proof = last_block['proof']
     proof = blockchain.proof_of_work(last_proof)
 
@@ -123,26 +121,26 @@ class blockchain(object):
         'previous_hash': block['previous_hash'],
     }
     return jsonify(response), 200
-  
-    @app.route('/transactions/new', methods=['POST'])
-    
-    def new_transaction():
-        values = request.get_json()
 
-        # Check that the required fields are in the POST'ed data
-        required = ['sender', 'recipient', 'amount']
-        if not all(k in values for k in required):
-            return 'Missing values', 400
+@app.route('/transactions/new', methods=['POST'])
 
-        # Create a new Transaction
-        index = blockchain.new_transaction(values['sender'], values['recipient'], values['amount'])
+def new_transaction():
+    values = request.get_json()
 
-        response = {'message': f'Transaction will be added to Block {index}'}
-        return jsonify(response), 201
+    # Check that the required fields are in the POST'ed data
+    required = ['sender', 'recipient', 'amount']
+    if not all(k in values for k in required):
+        return 'Missing values', 400
 
-    @app.route('/chain', methods=['GET'])
-    
-    def full_chain():
+    # Create a new Transaction
+    index = blockchain.new_transaction(values['sender'], values['recipient'], values['amount'])
+
+    response = {'message': f'Transaction will be added to Block {index}'}
+    return jsonify(response), 201
+
+@app.route('/chain', methods=['GET'])
+
+def full_chain():
     response = {
         'chain': blockchain.chain,
         'length': len(blockchain.chain),
@@ -150,8 +148,8 @@ class blockchain(object):
 
     return jsonify(response), 200
 
-    if __name__ == '__main__':
-        app.run(host='0.0.0.0', port=5000)
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5000)
 
     
     
