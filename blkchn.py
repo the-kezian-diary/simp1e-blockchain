@@ -4,6 +4,7 @@ from time import time
 from uuid import uuid4
 from textwrap import dedent
 from flask import Flask, jsonify, request
+from typing import Any, Dict
 
 class Blockchain():
 
@@ -16,9 +17,8 @@ class Blockchain():
         self.new_block(proof = 100, previous_hash = 1)
 
 
-    def new_block(self, proof, previous_hash=None):
+    def new_block(self, proof, previous_hash = None) -> Dict[str, Any]:
         # Will Create a new Block and adds it to the chain
-        
         # This is the structure of the Blocks in the blockchain
         block = {
             'index': len(self.chain) + 1,
@@ -27,12 +27,9 @@ class Blockchain():
             'proof': proof,
             'previous_hash': previous_hash or self.hash(self.chain[-1]),
         }
-        
         # Chaining up the Block into the Blockchain
-
         self.current_transaction =[]
         self.chain.append(block)
-
         return(block)
 
 
@@ -51,16 +48,13 @@ class Blockchain():
     @property
     def last_block(self):
         # Returns the hash of the Last Block in the Chain
-
         return self.chain[-1]
-
-
     @staticmethod
-    def hash(block):
+    def hash(block: Dict[str, Any]) -> str:
         # Returns the Hash of the Block
         # shall be using the hashlib library for the work
         # using SHA-256 hasing function :P
-        block_string = json.dump(block, sort_keys=True).encode()
+        block_string = json.dumps(block, sort_keys=True).encode()
         return hashlib.sha256(block_string).hexdigest()
 
     def proof_of_work(self, last_proof: int) -> int:
@@ -80,7 +74,7 @@ class Blockchain():
         # An algorithm that helps to validate the proof
         # The guess var is typical hash function with 2 inputs of 'last proof' and 'proof'
 
-        guess = 'f{last_proof}{proof}'.encode()
+        guess = f'{last_proof}{proof}'.encode()
         guess_hash = hashlib.sha256(guess).hexdigest()
         return guess_hash[:4] == "0000"
 
@@ -94,14 +88,11 @@ node_identifier = str(uuid4()).replace('-', '')
 blockchain = Blockchain()
 
 @app.route('/mine', methods=['GET'])
-
-
 def mine():
     # We run the proof of work algorithm to get the next proof...
     last_block = blockchain.last_block
     last_proof = last_block['proof']
     proof = blockchain.proof_of_work(last_proof)
-
     # We must receive a reward for finding the proof.
     # The sender is "0" to signify that this node has mined a new coin.
     blockchain.new_transaction(
